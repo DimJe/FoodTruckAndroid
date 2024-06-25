@@ -66,6 +66,8 @@ dependencies {
     implementation(libs.com.squareup.gson)
     implementation(libs.dagger.android)
     kapt(libs.dagger.compiler)
+    implementation(libs.navigation.compose)
+
     testImplementation(libs.junit)
     testImplementation(libs.mockito)
     testImplementation(libs.mockito.kotlin)
