@@ -67,7 +67,8 @@ dependencies {
     implementation(libs.dagger.android)
     kapt(libs.dagger.compiler)
     implementation(libs.navigation.compose)
-
+    implementation ("com.google.android.gms:play-services-location:21.0.1")
+    implementation (libs.naver.map.location)
     testImplementation(libs.junit)
     testImplementation(libs.mockito)
     testImplementation(libs.mockito.kotlin)
