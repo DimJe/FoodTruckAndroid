@@ -16,6 +16,7 @@ hilt = "2.49"
 mockito = "4.8.0"
 mockitoKotlin = "4.0.0"
 navigation = "2.5.3"
+hiltCompose = "1.0.0"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -40,6 +41,7 @@ mockito = {group = "org.mockito",name = "mockito-core", version.ref = "mockito"}
 mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin",version.ref = "mockitoKotlin"}
 naver-map-location = { module = "io.github.fornewid:naver-map-location", version.ref = "naverMapLocation" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation"}
+hilt-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltCompose"}
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
