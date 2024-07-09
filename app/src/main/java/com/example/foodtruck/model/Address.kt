@@ -7,9 +7,15 @@ data class AddressResponse(
 )
 data class Document(
     @SerializedName("road_address")
-    val roadAddress: Address?
+    val roadAddress: RoadAddress?,
+    val address: Address
 )
 
+data class RoadAddress(
+    @SerializedName("address_name")
+    val addressName: String?
+)
 data class Address(
+    @SerializedName("address_name")
     val addressName: String?
 )

@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -16,6 +19,9 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        val localProperties = Properties()
+        localProperties.load(FileInputStream(rootProject.file("local.properties")))
+        buildConfigField("String", "KAKAO_API_KEY", localProperties.getProperty("API_KEY"))
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -40,6 +46,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"

@@ -35,12 +35,16 @@ import com.naver.maps.map.compose.Marker
 import com.naver.maps.map.compose.MarkerState
 import com.naver.maps.map.compose.NaverMap
 import com.naver.maps.map.compose.rememberCameraPositionState
+import java.math.RoundingMode
 
 @OptIn(ExperimentalNaverMapApi::class)
 @Composable
 fun AddScreen(viewmodel: TruckViewModel) {
 
     val location = viewmodel.location.value
+    val address by remember {
+        viewmodel.address
+    }
     var mapProperties by remember {
         mutableStateOf(
             MapProperties(maxZoom = 30.0, minZoom = 18.0)
@@ -64,6 +68,10 @@ fun AddScreen(viewmodel: TruckViewModel) {
     LaunchedEffect(cameraPositionState.isMoving) {
         if(!cameraPositionState.isMoving){
             Log.e("test","${position.target}")
+            viewmodel.getAddress(
+                position.target.longitude.toBigDecimal().setScale(7,RoundingMode.DOWN).toDouble(),
+                position.target.latitude.toBigDecimal().setScale(7,RoundingMode.DOWN).toDouble()
+            )
         }
     }
     Box(modifier = Modifier.wrapContentSize()) {
@@ -80,21 +88,23 @@ fun AddScreen(viewmodel: TruckViewModel) {
                 height = 25.dp
             )
         }
-        AddDetailScreenBtn(modifier = Modifier.align(Alignment.BottomCenter))
+        AddDetailScreenBtn(modifier = Modifier.align(Alignment.BottomCenter),address)
 
     }
 }
 @Composable
-fun AddDetailScreenBtn(modifier: Modifier){
+fun AddDetailScreenBtn(modifier: Modifier,text: String){
     Column(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
             .padding(14.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(Color.LightGray),
         verticalArrangement = Arrangement.spacedBy(5.dp))
     {
-        Text(text = "서울특별시 관악구 봉천동 1688-48",
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+        Text(text = text,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
                 .padding(top = 10.dp),
             fontWeight = FontWeight.Bold
         )
@@ -102,7 +112,8 @@ fun AddDetailScreenBtn(modifier: Modifier){
             onClick = {
 
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .align(Alignment.CenterHorizontally)
                 .padding(bottom = 10.dp, start = 16.dp, end = 16.dp)
         ) {

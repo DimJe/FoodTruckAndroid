@@ -1,6 +1,8 @@
 package com.example.foodtruck.di
 
+import com.example.foodtruck.network.AddressService
 import com.example.foodtruck.network.TruckService
+import com.example.foodtruck.repository.AddressRepository
 import com.example.foodtruck.repository.TruckRepository
 import dagger.Module
 import dagger.Provides
@@ -33,7 +35,25 @@ object module {
     }
     @Singleton
     @Provides
+    fun provideKaKaoApi(): AddressService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://dapi.kakao.com")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(AddressService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideKaKaoRepository(kakaoService: AddressService): AddressRepository {
+        return AddressRepository(kakaoService)
+    }
+
+    @Singleton
+    @Provides
     fun provideTruckRepository(truckService: TruckService): TruckRepository {
         return TruckRepository(truckService)
     }
+
+
 }
