@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.com.squareup.retrofit)
     implementation(libs.com.squareup.gson)
     implementation(libs.dagger.android)
+    implementation(libs.androidx.compose.material)
     kapt(libs.dagger.compiler)
     implementation(libs.navigation.compose)
     implementation(libs.hilt.compose)

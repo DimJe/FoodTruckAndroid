@@ -2,7 +2,6 @@ package com.example.foodtruck
 
 import android.Manifest
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -10,22 +9,18 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -35,23 +30,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.foodtruck.ui.theme.FoodTruckTheme
-import com.naver.maps.map.compose.CameraPositionState
-import com.naver.maps.map.compose.ExperimentalNaverMapApi
-import com.naver.maps.map.compose.LocationTrackingMode
-import com.naver.maps.map.compose.MapProperties
-import com.naver.maps.map.compose.MapUiSettings
-import com.naver.maps.map.compose.Marker
-import com.naver.maps.map.compose.MarkerState
-import com.naver.maps.map.compose.NaverMap
-import com.naver.maps.map.compose.rememberCameraPositionState
-import com.naver.maps.map.compose.rememberFusedLocationSource
 import com.example.foodtruck.navigation.Screen
+import com.example.foodtruck.ui.screens.add.AddDetailScreen
 import com.example.foodtruck.ui.screens.add.AddScreen
 import com.example.foodtruck.ui.screens.home.HomeScreen
 import com.example.foodtruck.ui.screens.setting.SettingsScreen
 import com.example.foodtruck.viewmodel.TruckViewModel
-import com.naver.maps.geometry.LatLng
-import com.naver.maps.map.CameraPosition
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -66,7 +50,9 @@ class MainActivity : ComponentActivity() {
             FoodTruckTheme {
                 Scaffold(modifier = Modifier.fillMaxSize(),
                     bottomBar = {
-                        BottomNavigationBar(navController = navController)
+                        if (currentRoute(navController) != "AddDetail") {
+                            BottomNavigationBar(navController = navController)
+                        }
                     }
                 ) {
                     var hasLocationPermission by remember { mutableStateOf(false) }
@@ -103,8 +89,29 @@ fun Navigation(navController: NavHostController, innerPadding: PaddingValues) {
     val viewModel: TruckViewModel = hiltViewModel()
     NavHost(navController, startDestination = Screen.Home.route, modifier = Modifier.padding(innerPadding)) {
         composable(Screen.Home.route) { HomeScreen(viewModel) }
-        composable(Screen.Add.route) { AddScreen(viewModel) }
+        composable(Screen.Add.route) {
+            AddScreen(viewModel){
+                navController.navigate("AddDetail") {
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }
+        }
         composable(Screen.Settings.route) { SettingsScreen(viewModel) }
+        composable("AddDetail"){
+            AddDetailScreen(viewmodel = viewModel){
+                navController.navigate(Screen.Add.route) {
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }
+        }
     }
 }
 @Composable
