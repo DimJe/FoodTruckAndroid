@@ -10,6 +10,7 @@ import com.example.foodtruck.model.TruckResponse
 import com.example.foodtruck.network.ResultType
 import com.example.foodtruck.repository.AddressRepository
 import com.example.foodtruck.repository.TruckRepository
+import com.naver.maps.geometry.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,6 +24,7 @@ class TruckViewModel @Inject constructor(
     var location = mutableStateOf<Location?>(null)
     var truckList = mutableStateOf<List<TruckResponse>>(emptyList())
     var address = mutableStateOf("")
+    var newTruckPosition = mutableStateOf<LatLng?>(null)
     fun getTruckList() {
         viewModelScope.launch {
             val result = truckRepository.getTruckList()

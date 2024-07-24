@@ -6,6 +6,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -47,6 +50,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
+import com.example.foodtruck.model.TruckRequest
+import com.example.foodtruck.ui.theme.Orange
 import com.example.foodtruck.viewmodel.TruckViewModel
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraPosition
@@ -92,6 +97,7 @@ fun AddScreen(viewmodel: TruckViewModel,navigate: () -> Unit) {
     LaunchedEffect(cameraPositionState.isMoving) {
         if(!cameraPositionState.isMoving){
             Log.e("test","${position.target}")
+            viewmodel.newTruckPosition.value = position.target
             viewmodel.getAddress(
                 position.target.longitude.toBigDecimal().setScale(7,RoundingMode.DOWN).toDouble(),
                 position.target.latitude.toBigDecimal().setScale(7,RoundingMode.DOWN).toDouble()
@@ -112,10 +118,7 @@ fun AddScreen(viewmodel: TruckViewModel,navigate: () -> Unit) {
                 height = 25.dp
             )
         }
-        AddDetailScreenBtn(modifier = Modifier.align(Alignment.BottomCenter),address){
-            navigate()
-        }
-
+        AddDetailScreenBtn(modifier = Modifier.align(Alignment.BottomCenter),address,navigate)
     }
 }
 @Composable
@@ -148,7 +151,9 @@ fun AddDetailScreenBtn(modifier: Modifier,text: String,navigate: () -> Unit){
     }
 }
 
-
+/**
+ * AddDetailScreen
+ */
 @OptIn(ExperimentalNaverMapApi::class)
 @Composable
 fun AddDetailScreen(viewmodel: TruckViewModel?,onVisibilityChange: () -> Unit){
@@ -157,10 +162,17 @@ fun AddDetailScreen(viewmodel: TruckViewModel?,onVisibilityChange: () -> Unit){
     var menu by remember { mutableStateOf("")}
     val item = listOf("일","월","화","수","목","금","토")
     val selectedItem = remember { mutableStateOf(setOf<String>()) }
+    val isEnabled = name.isNotEmpty() && menu.isNotEmpty() && selectedItem.value.isNotEmpty()
+    val focusManager = LocalFocusManager.current
 
     Column(modifier = Modifier
         .fillMaxSize()
-        .padding(start = 10.dp, end = 10.dp),
+        .padding(start = 10.dp, end = 10.dp)
+        //키보드 포커스 해제
+        .clickable(
+            indication = null,
+            interactionSource = remember { MutableInteractionSource() }
+        ) { focusManager.clearFocus() },
         verticalArrangement = Arrangement.spacedBy(7.dp)) {
         Column(
             verticalArrangement = Arrangement.Center
@@ -174,7 +186,7 @@ fun AddDetailScreen(viewmodel: TruckViewModel?,onVisibilityChange: () -> Unit){
 
             NaverMap(
                 cameraPositionState = rememberCameraPositionState {
-                    position = CameraPosition(LatLng(viewmodel?.location?.value!!.latitude, viewmodel.location.value!!.longitude), 18.0)
+                    position = CameraPosition(LatLng(viewmodel?.newTruckPosition?.value!!.latitude, viewmodel.newTruckPosition.value!!.longitude), 18.0)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -184,7 +196,14 @@ fun AddDetailScreen(viewmodel: TruckViewModel?,onVisibilityChange: () -> Unit){
                         RoundedCornerShape(5.dp)
                     )
                     .border(1.dp, Color.Black, RoundedCornerShape(5.dp))
-            )
+            ){
+                Marker(
+                    state = MarkerState(position = LatLng(viewmodel?.newTruckPosition?.value!!.latitude, viewmodel.newTruckPosition.value!!.longitude)),
+                    captionText = "center",
+                    width = 25.dp,
+                    height = 25.dp
+                )
+            }
 
             Text(text = "이름", color = Color.Black, modifier = Modifier.padding(start = 10.dp, bottom = 15.dp), fontWeight = FontWeight.Bold)
             OutlinedTextField(
@@ -232,7 +251,8 @@ fun AddDetailScreen(viewmodel: TruckViewModel?,onVisibilityChange: () -> Unit){
                         },
                         contentPadding = PaddingValues(0.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (it in selectedItem.value) Color.Gray else Color.LightGray
+                            containerColor = if (it in selectedItem.value) Orange else Color.LightGray,
+                            contentColor = if (it in selectedItem.value) Color.Black else Color.White
                         )
                     ) {
                         Text(it, modifier = Modifier.align(Alignment.CenterVertically), textAlign = TextAlign.Center)
@@ -241,15 +261,42 @@ fun AddDetailScreen(viewmodel: TruckViewModel?,onVisibilityChange: () -> Unit){
 
             }
             Button(
-                onClick = {},
+                onClick = {
+                    //등장 요일 비트 변환
+                    var day = 0
+                    for (i in 0..6) {
+                        if(item[i] in selectedItem.value){
+                            day = day or (1 shl (6-i))
+                        }
+                    }
+                    val data = TruckRequest(
+                        name = name,
+                        latitude = viewmodel!!.newTruckPosition.value!!.latitude,
+                        longitude = viewmodel.newTruckPosition.value!!.longitude,
+                        openDay = day.toShort(),
+                        address = viewmodel.address.value
+                    )
+                    Log.d("test", "AddDetailScreen: $data")
+                    //등록 요청
+                    viewmodel.postTruck(
+                        data
+                    )
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .padding(10.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.LightGray,
-                    contentColor = Color.Gray
-                )
+                colors =
+                    if(!isEnabled) ButtonDefaults.buttonColors(
+                        containerColor = Color.LightGray,
+                        contentColor = Color.Gray
+                    )
+                    else ButtonDefaults.buttonColors(
+                        containerColor = Orange,
+                        contentColor = Color.Black
+                    )
+                ,
+                enabled = isEnabled
             ) {
                 Text(text = "등록 요청하기")
             }
