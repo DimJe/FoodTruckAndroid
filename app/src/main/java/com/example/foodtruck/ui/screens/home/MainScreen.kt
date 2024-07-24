@@ -26,7 +26,7 @@ import com.naver.maps.map.compose.rememberFusedLocationSource
 fun HomeScreen(viewmodel: TruckViewModel){
     var mapProperties by remember {
         mutableStateOf(
-            MapProperties(maxZoom = 30.0, minZoom = 18.0, locationTrackingMode = LocationTrackingMode.Follow )
+            MapProperties(maxZoom = 30.0, minZoom = 16.0, locationTrackingMode = LocationTrackingMode.Follow )
         )
     }
     var mapUiSettings by remember {
